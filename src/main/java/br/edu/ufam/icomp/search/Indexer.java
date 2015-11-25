@@ -71,7 +71,7 @@ public class Indexer {
 						//String table = i.getFilename();
 						String table = i.getCsv().getName();
 						// String table = i.getUri().toString();
-						add(i.getWord(), table); // TO-DO pra que serve este estrutura? pa nada?
+						add(i.getWord(), table);
 
 						// attribute2map <nome_arquivo.nomedacoluna, incrimental_id>
 						Integer attributeMapping = attribute2map.get(table + Constants.SEPATATOR + i.getHeadercolumn());
@@ -266,7 +266,7 @@ public class Indexer {
 			long time1 = System.currentTimeMillis();
 			List<Item> it = TermIndexTuples.getTermSetPrunned(keyword,termIndex,thresholdTail,attribute2map);
 			long time2 = System.currentTimeMillis();
-			System.out.println("\ngetPRunned took " + (time2-time1) + " ms");
+			// System.out.println("\ngetPRunned took " + (time2-time1) + " ms");
 			if ( (it != null) && (!it.isEmpty()) ) {
 				int count = 0;
 				for (Item item : it ) {					
@@ -287,7 +287,7 @@ public class Indexer {
 					tupleSets.get(tupleID).add(item.getAttributeMapping()); // adiciona na lista do citd, nome da tabela + nome da coluna
 					tupleSetsTerm.get(tupleID).add(map2attribute.get(item.getAttributeMapping())+ "=" + keyword );
 				}
-				System.out.println();
+				//System.out.println();
 			}
 		}
 		
@@ -527,7 +527,7 @@ public class Indexer {
 			long time = System.currentTimeMillis();
 			while ((str = br.readLine()) != null) {
 				long timeByLine = System.currentTimeMillis();
-				ParseInvertedIndexList parser  = new ParseInvertedIndexList(str, true);
+				ParseInvertedIndexList parser  = new ParseInvertedIndexList(str, false);
 		        lines.add(parser);
 		        System.out.println("----------------Term " + parser.getWord() + " with total docs " +
 		                            parser.getTotalelements() + " has elements: " + parser.getElement().size());

@@ -20,10 +20,10 @@ import br.edu.ufam.icomp.utils.LoadHashKeyValue;
 import br.edu.ufam.icomp.utils.StringHelper;
 import br.edu.ufam.icomp.utils.TextAnalysisUtil;
 
-public class Main {
+public class Search {
 	private static final String SEP = "=";
 	private static final String FIELD_SEP = "#";
-	private static Logger logger = Logger.getLogger(Main.class);
+	private static Logger logger = Logger.getLogger(Search.class);
 	private static int THRESHOLDTERMSET = 999999;
 
 	public static void main(String[] args) throws IOException {
@@ -115,11 +115,13 @@ public class Main {
 							System.out.println("--------QUERY-------------\n");
 							// PRINT RESULT INFO - START
 
+							Boolean b_atLeastOneFound = false;
 							// PRINT RESULT INFO - START
 							System.out.println("\n--------Inverted index-------------");
 							for (String token : tokens) {
 								List<String> results = indexer.getIndex(token.toLowerCase());
 								if (results != null) {
+									b_atLeastOneFound = true;
 									Q.add(token.toLowerCase());
 									StringBuilder builderresult = new StringBuilder();
 									int cont = results.size();
@@ -130,45 +132,50 @@ public class Main {
 											builderresult.append(", ");
 										cont--;
 									}
-									// System.out.println("{"+token + "} = {" +
-									// builderresult.toString() + "}" + "\n");
+									System.out.println("{"+token + "} = {" +
+											builderresult.toString() + "}");
 								} else System.out.println("Term \"" + token + "\" did not match any document.");
 							}
 							System.out .println("--------Inverted index-------------\n");
-
-							// PRINT RESULT INFO - START
-							System.out .println("\n--------TupleSets creating ...-------------");
-							List<List<String>> termsSets = new ArrayList<List<String>>();
-							if (Q.size() > 0) {
-								termsSets = indexer.createTermSets(Q, THRESHOLDTERMSET);
-							}
 							
-							for (List<String> termSet : termsSets) {
-								System.out.println(termSet);
-							}
-							
-							System.out .println("\n-------- Query Matches Ranked------");
-							SortedMap<Double, List<String>> QMRanked = new TreeMap<Double, List<String>>();
-							QMRanked = indexer.CNRank(termsSets, Q);
-							Double[] pesos = new Double[QMRanked.size()];
-							int topk = 0;
-							QMRanked.keySet().toArray(pesos);
-							Arrays.sort(pesos, Collections.reverseOrder()); // This is what you mean
+							if (b_atLeastOneFound) {
 
-							for (Double peso : pesos) {
-								// ++totalQM;
-								if (topk < 10) {
-									List<String> res = null;
-									if ( (mapIdToHeader != null) && (mapIdToHeader.size() > 0) && (mapIdToTableName != null) && (mapIdToTableName.size() > 0))
-										res = convertToNames(QMRanked.get(peso), mapIdToHeader, mapIdToTableName);
-									else 
-										res = QMRanked.get(peso);
-									
-									System.out.println("QM" + topk + ":" + res + "(" + peso + ")");
+								// PRINT RESULT INFO - START
+								System.out .println("\n--------TupleSets creating ...-------------");
+								List<List<String>> termsSets = new ArrayList<List<String>>();
+								if (Q.size() > 0) {
+									termsSets = indexer.createTermSets(Q, THRESHOLDTERMSET);
 								}
-								++topk;
+								
+								for (List<String> termSet : termsSets) {
+									System.out.println(termSet);
+								}
+								System.out .println("--------TupleSets creating ...-------------\n");
+								
+								System.out .println("\n-------- Query Matches Ranked------");
+								SortedMap<Double, List<String>> QMRanked = new TreeMap<Double, List<String>>();
+								QMRanked = indexer.CNRank(termsSets, Q);
+								Double[] pesos = new Double[QMRanked.size()];
+								int topk = 0;
+								QMRanked.keySet().toArray(pesos);
+								Arrays.sort(pesos, Collections.reverseOrder()); // This is what you mean
+	
+								for (Double peso : pesos) {
+									// ++totalQM;
+									if (topk < 10) {
+										List<String> res = null;
+										if ( (mapIdToHeader != null) && (mapIdToHeader.size() > 0) && (mapIdToTableName != null) && (mapIdToTableName.size() > 0))
+											res = convertToNames(QMRanked.get(peso), mapIdToHeader, mapIdToTableName);
+										else 
+											res = QMRanked.get(peso);
+										
+										System.out.println("QM" + topk + ":" + res + "(" + peso + ")");
+									}
+									++topk;
+								}
+								System.out .println("-------- Query Matches Ranked------\n\n");
+	
 							}
-
 						}
 					} catch (IOException ex) {
 						ex.printStackTrace();
@@ -178,8 +185,7 @@ public class Main {
 			} else  System.out.println("Folder " + args[0] + " does not exist.");
 		} else {
 			System.out.println("Usage: <java_program> <action> <path_folder>");
-			System.out .println("where actions can be <loadList> or <createFromFiles>");
-			System.out .println("Example: java -jar CSVParser -createFromFile /home/user/files");
+			System.out .println("where actions can be <loadList>");
 			System.out .println("Example: java -jar CSVParser -loadList invertedlist.lst");
 			System.exit(-2);
 		}
